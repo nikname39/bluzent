@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="설정"
+        android:text="노트북 보관함 개폐장치"
         android:textSize="32dp"
         android:gravity="center"/>
 

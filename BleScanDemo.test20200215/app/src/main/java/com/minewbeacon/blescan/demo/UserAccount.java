@@ -1,3 +1,6 @@
+/**
+ * vo
+ */
 package com.minewbeacon.blescan.demo;
 
 public class UserAccount
@@ -7,6 +10,7 @@ public class UserAccount
     private String password;
     private String name;
     private String work_start;
+    private String work_end;
 
     public UserAccount() {}
 
@@ -24,5 +28,8 @@ public class UserAccount
 
     public  String getWork_start() { return work_start;}
     public void setWork_start(String work_start) { this.work_start = work_start;}
+
+    public  String getWork_end() { return work_end;}
+    public void setWork_end(String work_end) { this.work_end = work_end;}
 
 }

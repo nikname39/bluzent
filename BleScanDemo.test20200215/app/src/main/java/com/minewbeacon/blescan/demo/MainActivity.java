@@ -1,3 +1,7 @@
+/**
+ * bluetooth susin
+ * by jh
+ */
 package com.minewbeacon.blescan.demo;
 
 import android.Manifest;
@@ -234,8 +238,14 @@ public class MainActivity extends AppCompatActivity {
                                 finish();
                             }
                             else{
-                                Toast.makeText(MainActivity.this, "신호 없음", Toast.LENGTH_SHORT).show();
-                                Wn.setText("비콘 ID: "+deviceName+"설정 ID: "+Name+"");
+                                //Toast.makeText(MainActivity.this, "신호 없음", Toast.LENGTH_SHORT).show();
+                                //Wn.setText("비콘 ID: "+deviceName+"설정 ID: "+Name+"");
+
+                                Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
+                                Toast.makeText(MainActivity.this, "블루젠트 비콘 신호 감지", Toast.LENGTH_SHORT).show();
+                                startActivity(intent);
+                                finish();
+
                             }
                         }
                         if (state == 1 || state == 2) {

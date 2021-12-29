@@ -1,3 +1,7 @@
+/**
+ * work_start and end
+ * by jh
+ */
 package com.minewbeacon.blescan.demo;
 
 import android.os.Bundle;
@@ -5,6 +9,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,10 +48,11 @@ public class HomeFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    private TextView mDisplayDate, mOnworkView;
+    private TextView mDisplayDate, mOnworkView, mOffworkView;
     private FirebaseAuth mFirebaseAuth;
     private DatabaseReference mDatabaseRef;
     private Button mBtnOnWork;
+    private Button mBtnOffWork;
     private String Name = "";
     private String Work = "";
 
@@ -92,6 +98,7 @@ public class HomeFragment extends Fragment {
         //.. DAte
         mDisplayDate = (TextView) v.findViewById(R.id.tvDate);
         mOnworkView = (TextView) v.findViewById(R.id.OnworkView);
+        mOffworkView = (TextView) v.findViewById(R.id.OffworkView);
 
         Calendar cal = Calendar.getInstance();
         int year = cal.get(Calendar.YEAR);
@@ -101,7 +108,7 @@ public class HomeFragment extends Fragment {
         int minute = cal.get(Calendar.MINUTE);
 
         String date = year + "-" + (month+1) + "-" + day;
-        String Timedate = hour + "-" + minute;
+        String Timedate = hour + "시" + minute + "분";
 
 
         mDisplayDate.setText(date);
@@ -110,14 +117,13 @@ public class HomeFragment extends Fragment {
         //출퇴근 시간 가져오기
 
 
-
 //        mDatabaseRef.child("Attendance").child(date).child(mDatabaseRef.child("UserAccount").child(firebaseUser.getUid()).child("name").toString()).child("work_start").addValueEventListener(new ValueEventListener() {
 //            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                String value = dataSnapshot.getValue(String.class);
-//                Name= value;
-//                mOnworkView.setText(Name);
-//
+//            public void onDataChange(@NonNull DataSnapshot datasnapshot1) {
+//                String value1 = datasnapshot1.getValue(String.class);
+//                Work = value1;
+//                mOnworkView.setText("오늘의 출근 시간:"+Work);
+//                Toast.makeText(getActivity(), Work, Toast.LENGTH_SHORT).show();
 //            }
 //
 //            @Override
@@ -126,19 +132,11 @@ public class HomeFragment extends Fragment {
 //            }
 //        });
 
-
-
-        //..
-
-        //출퇴근
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference("bluzent");
-
-        mBtnOnWork= v.findViewById(R.id.OnWork);
-        // mDatabaseRef.child("UserAccount").child(firebaseUser.getUid()).setValue(account);
-        mBtnOnWork.setOnClickListener(new View.OnClickListener() {
+        new Handler().postDelayed(new Runnable()
+        {
             @Override
-            public void onClick(View v) {
+            public void run()
+            {
                 FirebaseUser firebaseUser = mFirebaseAuth.getCurrentUser();
                 UserAccount account = new UserAccount();
                 account.setIdToken(firebaseUser.getUid());
@@ -154,10 +152,10 @@ public class HomeFragment extends Fragment {
 
                         mDatabaseRef.child("Attendance").child(date).child(Name).child("work_start").addValueEventListener(new ValueEventListener() {
                             @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                String value1 = dataSnapshot.getValue(String.class);
+                            public void onDataChange(@NonNull DataSnapshot datasnapshot1) {
+                                String value1 = datasnapshot1.getValue(String.class);
                                 Work = value1;
-                                mOnworkView.setText(Work);
+                                mOnworkView.setText("오늘의 출근 시간: "+Work);
                                 Toast.makeText(getActivity(), Work, Toast.LENGTH_SHORT).show();
                             }
                             @Override
@@ -165,9 +163,6 @@ public class HomeFragment extends Fragment {
 
                             }
                         });
-
-                        mDatabaseRef.child("Attendance").child(date).child(Name).setValue(account);
-
 
                     }
 
@@ -177,13 +172,119 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
-
-
-
-
-                Toast.makeText(getActivity(), "출근 성공", Toast.LENGTH_SHORT).show();
+                //딜레이 후 시작할 코드 작성
             }
-        });
+        }, 600);// 0.6초 정도 딜레이를 준 후 시작
+
+
+
+        //..
+
+        //출퇴근
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference("bluzent");
+
+        mBtnOnWork= v.findViewById(R.id.OnWork);
+        // mDatabaseRef.child("UserAccount").child(firebaseUser.getUid()).setValue(account);
+        try {
+            mBtnOnWork.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    FirebaseUser firebaseUser = mFirebaseAuth.getCurrentUser();
+                    UserAccount account = new UserAccount();
+                    account.setIdToken(firebaseUser.getUid());
+                    account.setEmailId(firebaseUser.getEmail());
+                    account.setWork_start(Timedate);
+
+
+                    mDatabaseRef.child("UserAccount").child(firebaseUser.getUid()).child("name").addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String value = dataSnapshot.getValue(String.class);
+                            Name = value;
+
+                            mDatabaseRef.child("Attendance").child(date).child(Name).child("work_start").addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot datasnapshot1) {
+                                    String value1 = datasnapshot1.getValue(String.class);
+                                    Work = value1;
+                                    mOnworkView.setText("오늘의 출근 시간:" + Work);
+                                    Toast.makeText(getActivity(), Work, Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+
+                            mDatabaseRef.child("Attendance").child(date).child(Name).setValue(account);
+
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            //Log.e("MainActivity", String.valueOf(databaseError.toException())); // 에러문 출력
+                        }
+                    });
+
+
+                    Toast.makeText(getActivity(), "출근 성공", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }catch (Exception e) {
+        }
+
+//        mBtnOffWork= v.findViewById(R.id.OffWork);
+//        // mDatabaseRef.child("UserAccount").child(firebaseUser.getUid()).setValue(account);
+//        mBtnOffWork.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                FirebaseUser firebaseUser = mFirebaseAuth.getCurrentUser();
+//                UserAccount account = new UserAccount();
+//                account.setIdToken(firebaseUser.getUid());
+//                account.setEmailId(firebaseUser.getEmail());
+//
+//                account.setWork_end(Timedate);
+//
+//
+//                mDatabaseRef.child("UserAccount").child(firebaseUser.getUid()).child("name").addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                        String value = dataSnapshot.getValue(String.class);
+//                        Name= value;
+//
+//                        mDatabaseRef.child("Attendance").child(date).child(Name).child("work_end").addValueEventListener(new ValueEventListener() {
+//                            @Override
+//                            public void onDataChange(@NonNull DataSnapshot datasnapshot1) {
+//                                String value1 = datasnapshot1.getValue(String.class);
+//                                Work = value1;
+//                                mOffworkView.setText("오늘의 퇴근 시간:"+Work);
+//                                Toast.makeText(getActivity(), Work, Toast.LENGTH_SHORT).show();
+//                            }
+//                            @Override
+//                            public void onCancelled(@NonNull DatabaseError error) {
+//
+//                            }
+//                        });
+//
+//                        mDatabaseRef.child("Attendance").child(date).child(Name).(account);
+//
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//                        //Log.e("MainActivity", String.valueOf(databaseError.toException())); // 에러문 출력
+//                    }
+//                });
+//
+//
+//
+//                Toast.makeText(getActivity(), "출근 성공", Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
 
 
